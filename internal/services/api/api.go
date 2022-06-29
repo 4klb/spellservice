@@ -79,7 +79,7 @@ func GetResponce(texts []string, log *zap.SugaredLogger) (Responce, error) {
 	return responces, nil
 }
 
-func Tmp(log *zap.SugaredLogger) (Text, error) {
+func GetText(log *zap.SugaredLogger) (Text, error) {
 	var text Text
 	filename := "templates/text.json"
 	result, err := Readfile(filename)

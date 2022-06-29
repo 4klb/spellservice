@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"main/internal/services/api"
 	"main/internal/services/routes"
 
@@ -10,13 +11,13 @@ import (
 func main() {
 	logger, err := zap.NewDevelopment()
 	if err != nil {
-		println("не  удалось создать логер")
+		log.Println("could not create a logger")
 		return
 	}
 	log := logger.Sugar()
 	defer log.Sync()
 
-	text, err := api.Tmp(log)
+	text, err := api.GetText(log)
 	if err != nil {
 		log.Debug(err.Error())
 		return
