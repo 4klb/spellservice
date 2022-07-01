@@ -4,6 +4,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/spf13/viper"
 	"go.uber.org/zap"
 )
 
@@ -79,7 +80,7 @@ func Test_GetResponce(t *testing.T) {
 	}
 
 	for _, value := range data {
-		_, err := GetResponce(value.text, &zap.SugaredLogger{})
+		_, err := GetResponce(value.text, &zap.SugaredLogger{}, &viper.Viper{})
 		if err != nil {
 			t.Errorf(errReadfile)
 			return

@@ -1,0 +1,6 @@
+server:
+  port: 8080
+api:
+  url: https://speller.yandex.net/services/spellservice.json/checkTexts
+files:
+  filename: templates/text.json

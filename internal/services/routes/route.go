@@ -1,26 +1,26 @@
 package routes
 
 import (
-	"net/http"
-
 	"main/internal/services/api"
+	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
 	"go.uber.org/zap"
 )
 
-func SetUpRoutes(text api.Text, log *zap.SugaredLogger) error {
+func SetUpRoutes(text api.Text, log *zap.SugaredLogger, v *viper.Viper) error {
 	r := gin.Default()
+	port := v.GetString("server.port")
+	if port != "" {
+		os.Setenv("PORT", port) // обходим порт по умолчанию
+	}
 	r.GET("/", func(c *gin.Context) {
-		responces, err := api.GetResponce(text.Texts, log)
-		if err != nil {
-			log.Debug(err)
-			return
-		}
-		api.Replace(responces, text.Texts)
 		c.JSON(http.StatusOK, gin.H{
 			"texts": text.Texts,
 		})
 	})
+
 	return r.Run()
 }

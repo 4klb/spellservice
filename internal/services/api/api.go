@@ -2,11 +2,13 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
 
+	"github.com/spf13/viper"
 	"go.uber.org/zap"
 )
 
@@ -14,7 +16,7 @@ type Text struct {
 	Texts []string `json:"texts"`
 }
 
-type Responce [][]struct {
+type Response [][]struct {
 	Id   int
 	Code int      `json:"code"`
 	Pos  int      `json:"pos"`
@@ -25,7 +27,7 @@ type Responce [][]struct {
 	S    []string `json:"s"`
 }
 
-func Replace(responces Responce, texts []string) {
+func Replace(responces Response, texts []string) {
 	for i, value := range responces {
 		for _, v := range value {
 			if len(value) == 0 {
@@ -36,58 +38,84 @@ func Replace(responces Responce, texts []string) {
 	}
 }
 
-func GetResponce(texts []string, log *zap.SugaredLogger) (Responce, error) {
-	var responces Responce
+func GetResponce(texts []string, log *zap.SugaredLogger, v *viper.Viper) (Response, error) {
+	var responces Response
+	errSaver := make(chan error)
+
 	for id, val := range texts {
-		req := "https://speller.yandex.net/services/spellservice.json/checkTexts"
+		go func(id int) { // запросы выполняются конкурентно
+			req := v.GetString("api.url")
 
-		u, err := url.Parse(req)
+			u, err := url.Parse(req)
+			if err != nil {
+				log.Error(err)
+				errSaver <- err
+				return
+			}
+
+			q := u.Query()
+
+			q.Add("text", val)
+
+			u.RawQuery = q.Encode()
+
+			resp, err := http.Get(u.String())
+			if err != nil {
+				log.Error(err)
+				errSaver <- err
+				return
+			}
+
+			if resp.StatusCode != http.StatusOK { //При вызове удаленных URL проверяются HTTP статус ответа
+				log.Error(errors.New("could not to get a response"))
+				errSaver <- errors.New("could not to get a response")
+				return
+
+			}
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				log.Error(err)
+				errSaver <- err
+				return
+			}
+
+			defer resp.Body.Close() // закрывается тело ответа после прочтения
+
+			responce := Response{}
+			err = json.Unmarshal(body, &responce)
+			if err != nil {
+				log.Error(err)
+				errSaver <- err
+				return
+			}
+
+			if len(responce[0]) != 0 {
+				responce[0][0].Id = id
+			}
+			responces = append(responces, responce[0])
+			errSaver <- nil
+
+		}(id)
+
+		err := <-errSaver
 		if err != nil {
-			log.Error(err)
 			return nil, err
 		}
-
-		q := u.Query()
-
-		q.Add("text", val)
-
-		u.RawQuery = q.Encode() //
-
-		resp, err := http.Get(u.String())
-		if err != nil {
-			log.Error(err)
-			return nil, err
-		}
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			log.Error(err)
-			return nil, err
-		}
-
-		responce := Responce{}
-		err = json.Unmarshal(body, &responce)
-		if err != nil {
-			log.Error(err)
-			return nil, err
-		}
-
-		if len(responce[0]) != 0 {
-			responce[0][0].Id = id
-		}
-		responces = append(responces, responce[0])
 	}
 	return responces, nil
 }
 
-func GetText(log *zap.SugaredLogger) (Text, error) {
+func GetText(log *zap.SugaredLogger, v *viper.Viper) (Text, error) {
 	var text Text
-	filename := "templates/text.json"
+	filename := v.GetString("files.filename")
 	result, err := Readfile(filename)
 	if err != nil {
+		log.Error(err)
 		return text, err
 	}
 	text, err = Unmarshal(result)
 	if err != nil {
+		log.Error(err)
 		return text, err
 	}
 	return text, err
