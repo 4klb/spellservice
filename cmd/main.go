@@ -1,9 +1,9 @@
 package main
 
 import (
-	"main/config"
-	"main/internal/services/api"
-	"main/internal/services/routes"
+	"github.com/4klb/spellservice/config"
+	"github.com/4klb/spellservice/internal/services/api"
+	"github.com/4klb/spellservice/internal/services/routes"
 
 	"go.uber.org/zap"
 )

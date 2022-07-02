@@ -1,4 +1,4 @@
-module main
+module github.com/4klb/spellservice
 
 go 1.18
 

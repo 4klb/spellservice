@@ -1,9 +1,10 @@
 package routes
 
 import (
-	"main/internal/services/api"
 	"net/http"
 	"os"
+
+	"github.com/4klb/spellservice/internal/services/api"
 
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"

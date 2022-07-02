@@ -1,0 +1,1 @@
+A spelling correction service which using https://yandex.ru/dev/speller,https://github.com/gin-gonic/gin and as a logger https://github.com/uber-go/zap.
