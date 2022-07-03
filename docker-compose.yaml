@@ -6,4 +6,4 @@ services:
     image: "${SPELLSERVICE_IMAGE_NAME}"
     build: .
     volumes:
-      - "/app"
+      - volume:/home/spellservice_app
