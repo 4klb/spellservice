@@ -1,0 +1,9 @@
+version: '3.5'
+
+services:
+  spellservice_Docker_Compose:
+    container_name: "${SPELLSERVICE_CONTAINER_NAME}"
+    image: "${SPELLSERVICE_IMAGE_NAME}"
+    build: .
+    volumes:
+      - "/app"

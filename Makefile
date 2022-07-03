@@ -7,3 +7,6 @@ clean:
 dbuild:
 	@docker image build -f Dockerfile -t spellserviceimage .
 	@docker container run -p 8080:8080 --detach --name container_spellservice spellserviceimage
+
+docker-compose:
+	@docker-compose up -d spellservice_Docker_Compose
